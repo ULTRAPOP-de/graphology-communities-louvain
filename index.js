@@ -35,8 +35,7 @@
  * DOI.org (Crossref), doi:10.1038/s41598-019-41695-z.
  * https://arxiv.org/abs/1810.08473
  */
-var defaults = require('lodash/defaultsDeep'),
-    isGraph = require('graphology-utils/is-graph'),
+var isGraph = require('graphology-utils/is-graph'),
     inferType = require('graphology-utils/infer-type'),
     SparseMap = require('mnemonist/sparse-map'),
     SparseQueueSet = require('mnemonist/sparse-queue-set'),
@@ -712,7 +711,26 @@ function louvain(assign, detailed, graph, options) {
     throw new Error('graphology-communities-louvain: cannot run the algorithm on a true mixed graph.');
 
   // Attributes name
-  options = defaults({}, options, DEFAULTS);
+  var _options = {};
+  Object.keys(DEFAULTS).forEach(function (dKey) {
+    _options[dKey] = DEFAULTS[dKey];
+
+    if (typeof _options[dKey] === 'object') {
+      if (options && dKey in options) {
+        Object.keys(_options[dKey]).forEach(function (subDKey) {
+          if (subDKey in options[dKey]) {
+            _options[dKey][subDKey] = options[dKey][subDKey];
+          }
+        });
+      }
+    }
+    else {
+      if (options && dKey in options) {
+        _options[dKey] = options[dKey];
+      }
+    }
+  });
+  options = _options;
 
   // Empty graph case
   var c = 0;
